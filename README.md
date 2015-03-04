@@ -1,9 +1,8 @@
-My Java8 Koans
+Java 8 Coding Dojo
 ================
 
-# Java 8 Koans
-_TODO: make tests into actual koans_
-
+# Java 8 Dojo
+Learn functional programming using Java 8
 Requirements:
 * [Gradle](http://www.gradle.org/) 1.11+
 * JDK 1.8.0+

@@ -34,13 +34,15 @@ public class MLBTest {
     @Test
     public void should_load_csv_file() throws IOException {
         assertNotNull(attendanceStream);
-        assertTrue(attendanceStream.count() > 0);
+        assertTrue(attendanceStream.count() == 2433);
     }
 
-    @Test
-    public void totalLeagueAttendanceTest()throws Exception {
-        assertEquals(73780670, attendanceStream.mapToInt(MLBAttendance::getAttendance).sum());
-    }
+
+
+//    @Test
+//    public void totalLeagueAttendanceTest()throws Exception {
+//        assertEquals(73780670, attendanceStream.mapToInt(MLBAttendance::getAttendance).sum());
+//    }
 
     @Test
     public void totalForReds() throws Exception {
@@ -65,15 +67,39 @@ public class MLBTest {
         assertThat(min.get().getValue(), is(7255796));
     }
 
+    @Test
+    public void testSplitHomeTeam() throws Exception{
+        assertEquals("Cincinnati", MLBAttendance.filterHomeCity("at Cincinnati 10 Pittsburgh 6"));
+    }
 
+    @Test
+    public void testSplitHomeTeamNY() throws Exception{
+        assertEquals("NY Mets", MLBAttendance.filterHomeCity("Cincinnati 10 at NY Mets 6"));
+    }
 
     @Test
     public void testSplitAwayTeam() throws Exception{
-        String homecity = "at Cincinnati 10 Pittsburgh 6";
-        Pattern p = Pattern.compile("(at )?([a-zA-Z ]+) (\\d+)");
-        Matcher matcher = p.matcher(homecity);
-        boolean matches = matcher.matches();
-        System.out.println(matcher.group(0));
+        assertEquals("Pittsburgh", MLBAttendance.filterAwayCity("at Cincinnati 10 Pittsburgh 6"));
+    }
 
+    @Test
+    public void testSplitAwayTeamNY() throws Exception {
+        MLBAttendance first = attendanceStream.findFirst().get();
+        assertEquals("LA Dodgers", first.getAwayCity());
+    }
+
+    @Test
+    public void highestAwayAttendance() throws Exception {
+        Map<String, Integer> attendanceByAwayCity = attendanceStream
+                .collect(Collectors.groupingBy(s -> s.getAwayCity(), Collectors.summingInt(s -> s.getAttendance())));
+        Optional<Map.Entry<String, Integer>> max = attendanceByAwayCity.entrySet().stream().max(Map.Entry.comparingByValue());
+        assertThat(max.get().getKey(), is("NY Yankees"));
+        assertThat(max.get().getValue(), is(2876501));
+    }
+
+    @Test
+    public void testMilwaukee_at_San_Diego(){
+        String game = "Milwaukee 10 at San Diego 1";
+        assertEquals("Milwaukee", MLBAttendance.filterAwayCity("Milwaukee 10 at San Diego 1"));
     }
 }
